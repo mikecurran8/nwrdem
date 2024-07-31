@@ -1,0 +1,32 @@
+protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    String url = "jdbc:mysql://localhost:3306/mydatabase";
+    String username = "myusername";
+    String password = "mypassword";
+
+    String firstName = request.getParameter("firstName");
+    String lastName = request.getParameter("lastName");
+    String email = request.getParameter("email");
+
+    try (Connection conn = DriverManager.getConnection(url, username, password)) {
+        // Create the first prepared statement
+        String sql1 = "INSERT INTO users (first_name, last_name, email) VALUES (?, ?, ?)";
+        PreparedStatement stmt1 = conn.prepareStatement(sql1);
+        stmt1.setString(1, firstName);
+        stmt1.setString(2, lastName);
+        stmt1.setString(3, email);
+        int rowsAffected1 = stmt1.executeUpdate();
+
+        // Create the second prepared statement
+        String sql2 = "INSERT INTO orders (user_id, order_date) VALUES (?, ?)";
+        PreparedStatement stmt2 = conn.prepareStatement(sql2);
+        stmt2.setInt(1, 1); // Assume that user_id 1 is the user we just inserted
+        stmt2.setDate(2, new java.sql.Date(System.currentTimeMillis()));
+        int rowsAffected2 = stmt2.executeUpdate();
+
+        response.getWriter().println("Rows affected (users): " + rowsAffected1);
+        response.getWriter().println("Rows affected (orders): " + rowsAffected2);
+    } catch (SQLException e) {
+        response.getWriter().println("Error: " + e.getMessage());
+    }
+}
+
